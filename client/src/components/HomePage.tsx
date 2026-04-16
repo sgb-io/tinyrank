@@ -48,6 +48,7 @@ export function HomePage({ session, setSession, navigate }: HomePageProps) {
       setSession({
         ...session,
         pollsCreated: [...session.pollsCreated, data.code],
+        polls: [...(session.polls ?? []), { code: data.code, title: title }],
       });
       navigate(`/poll/${data.code}`);
     } catch {
