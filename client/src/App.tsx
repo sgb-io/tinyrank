@@ -2,13 +2,15 @@ import { useEffect, useState } from 'react';
 import { HomePage } from './components/HomePage';
 import { PollPage } from './components/PollPage';
 import { SessionInfo } from './types';
+import { initCsrf, apiFetch } from './utils/api';
 
 export default function App() {
   const [session, setSession] = useState<SessionInfo | null>(null);
   const [path, setPath] = useState(window.location.pathname);
 
   useEffect(() => {
-    fetch('/api/session')
+    initCsrf()
+      .then(() => apiFetch('/api/session'))
       .then(r => r.json())
       .then(data => setSession(data))
       .catch(console.error);

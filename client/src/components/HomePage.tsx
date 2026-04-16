@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { SessionInfo } from '../types';
+import { apiFetch } from '../utils/api';
 
 interface HomePageProps {
   session: SessionInfo;
@@ -25,7 +26,7 @@ export function HomePage({ session, setSession, navigate }: HomePageProps) {
 
     setCreating(true);
     try {
-      const res = await fetch('/api/polls', {
+      const res = await apiFetch('/api/polls', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, items }),

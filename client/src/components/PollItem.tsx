@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PollItem as PollItemType, SessionInfo } from '../types';
 import { VoterAvatars } from './VoterAvatars';
+import { apiFetch } from '../utils/api';
 
 interface PollItemProps {
   item: PollItemType;
@@ -22,7 +23,7 @@ export function PollItem({ item, pollCode, session, isOwner, onDelete, onVoteCha
     setVoting(true);
     try {
       const voteValue = (type === 'up' && userUpvoted) || (type === 'down' && userDownvoted) ? null : type;
-      await fetch(`/api/polls/${pollCode}/items/${item.id}/vote`, {
+      await apiFetch(`/api/polls/${pollCode}/items/${item.id}/vote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ vote: voteValue }),
@@ -38,7 +39,7 @@ export function PollItem({ item, pollCode, session, isOwner, onDelete, onVoteCha
   const handleDelete = async () => {
     if (!confirm(`Delete "${item.text}"?`)) return;
     try {
-      await fetch(`/api/polls/${pollCode}/items/${item.id}`, { method: 'DELETE' });
+      await apiFetch(`/api/polls/${pollCode}/items/${item.id}`, { method: 'DELETE' });
       onDelete(item.id);
     } catch (err) {
       console.error(err);

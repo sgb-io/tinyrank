@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Poll, SessionInfo } from '../types';
 import { TierList } from './TierList';
+import { apiFetch } from '../utils/api';
 
 interface PollPageProps {
   code: string;
@@ -39,7 +40,7 @@ export function PollPage({ code, session, setSession, navigate }: PollPageProps)
 
   const loadPoll = useCallback(async () => {
     try {
-      const res = await fetch(`/api/polls/${code}`);
+      const res = await apiFetch(`/api/polls/${code}`);
       if (!res.ok) {
         const d = await res.json();
         setError(d.error || 'Failed to load poll');
@@ -80,7 +81,7 @@ export function PollPage({ code, session, setSession, navigate }: PollPageProps)
     const name = username.trim();
     if (!name) { setUsernameError('Name required'); return; }
     try {
-      const res = await fetch('/api/session', {
+      const res = await apiFetch('/api/session', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: name }),
@@ -99,7 +100,7 @@ export function PollPage({ code, session, setSession, navigate }: PollPageProps)
     if (!text) return;
     setAddingItem(true);
     try {
-      const res = await fetch(`/api/polls/${code}/items`, {
+      const res = await apiFetch(`/api/polls/${code}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
@@ -112,14 +113,14 @@ export function PollPage({ code, session, setSession, navigate }: PollPageProps)
 
   const handleDeletePoll = async () => {
     if (!confirm('Delete this poll? This cannot be undone.')) return;
-    await fetch(`/api/polls/${code}`, { method: 'DELETE' });
+    await apiFetch(`/api/polls/${code}`, { method: 'DELETE' });
     navigate('/');
   };
 
   const handleRenameTitle = async () => {
     const trimmed = titleInput.trim();
     if (!trimmed || !poll) return;
-    await fetch(`/api/polls/${code}`, {
+    await apiFetch(`/api/polls/${code}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: trimmed }),
@@ -128,7 +129,7 @@ export function PollPage({ code, session, setSession, navigate }: PollPageProps)
   };
 
   const handleDeleteItem = useCallback(async (itemId: string) => {
-    await fetch(`/api/polls/${code}/items/${itemId}`, { method: 'DELETE' });
+    await apiFetch(`/api/polls/${code}/items/${itemId}`, { method: 'DELETE' });
   }, [code]);
 
   if (error) {
