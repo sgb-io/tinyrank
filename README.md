@@ -167,10 +167,10 @@ Items are assigned a tier automatically from their score (`upvotes − downvotes
 | ---- | ----------- |
 | S    | ≥ 1         |
 | A    | 0 (default) |
-| B    | −1 to −3    |
-| C    | −4 to −6    |
-| D    | −7 to −9    |
-| E    | ≤ −10       |
+| B    | −1 to −2    |
+| C    | −3 to −4    |
+| D    | −5 to −6    |
+| E    | ≤ −7        |
 
 ## Limits
 
@@ -178,6 +178,7 @@ Items are assigned a tier automatically from their score (`upvotes − downvotes
 | ------------------- | -------------- |
 | Polls per session   | 10             |
 | Global polls        | 5,000          |
+| Items per poll      | 25             |
 | Poll lifetime       | 24 hours       |
 | Poll title length   | 100 characters |
 | Item text length    | 200 characters |

@@ -9,6 +9,7 @@ export interface VoteRecord {
 export interface PollItem {
   id: string;
   text: string;
+  itemType: "text" | "image";
   upvotes: VoteRecord[];
   downvotes: VoteRecord[];
   addedBy: string;
@@ -34,8 +35,8 @@ export interface SessionInfo {
 export function getTier(score: number): Tier {
   if (score >= 1) return "S";
   if (score >= 0) return "A";
-  if (score >= -3) return "B";
-  if (score >= -6) return "C";
-  if (score >= -9) return "D";
+  if (score >= -2) return "B";
+  if (score >= -4) return "C";
+  if (score >= -6) return "D";
   return "E";
 }

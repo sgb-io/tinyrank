@@ -1,10 +1,11 @@
-import { Poll, Session } from './types';
+import { Poll, Session } from "./types";
 
 export const polls = new Map<string, Poll>();
 export const sessions = new Map<string, Session>();
 
 export const MAX_POLLS_PER_USER = 10;
 export const MAX_GLOBAL_POLLS = 5000;
+export const MAX_ITEMS_PER_POLL = 25;
 export const POLL_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 export function cleanupExpiredPolls(): void {
@@ -13,7 +14,7 @@ export function cleanupExpiredPolls(): void {
     if (poll.expiresAt < now) {
       polls.delete(code);
       for (const session of sessions.values()) {
-        session.pollsCreated = session.pollsCreated.filter(c => c !== code);
+        session.pollsCreated = session.pollsCreated.filter((c) => c !== code);
       }
     }
   }
@@ -22,8 +23,8 @@ export function cleanupExpiredPolls(): void {
 setInterval(cleanupExpiredPolls, 5 * 60 * 1000);
 
 export function generateCode(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let code = '';
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let code = "";
   for (let i = 0; i < 6; i++) {
     code += chars[Math.floor(Math.random() * chars.length)];
   }

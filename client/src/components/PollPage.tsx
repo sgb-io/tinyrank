@@ -36,6 +36,7 @@ export function PollPage({
   const [showUsernameModal, setShowUsernameModal] = useState(!session.username);
   const [usernameError, setUsernameError] = useState("");
   const [newItemText, setNewItemText] = useState("");
+  const [newItemType, setNewItemType] = useState<"text" | "image">("text");
   const [addingItem, setAddingItem] = useState(false);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState("");
@@ -124,17 +125,17 @@ export function PollPage({
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = newItemText.trim();
-    if (!text) return;
+    if (!text || addingItem) return;
     setAddingItem(true);
+    setNewItemText("");
     try {
-      const res = await apiFetch(`/api/polls/${code}/items`, {
+      await apiFetch(`/api/polls/${code}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, itemType: newItemType }),
       });
-      if (res.ok) setNewItemText("");
     } catch {
-      /* ignore */
+      setNewItemText(text);
     } finally {
       setAddingItem(false);
     }
@@ -326,19 +327,53 @@ export function PollPage({
 
       <div className="add-item-section">
         <form onSubmit={handleAddItem} className="add-item-form">
+          <div className="add-item-type-toggle">
+            <button
+              type="button"
+              className={`btn btn-ghost ${newItemType === "text" ? "active" : ""}`}
+              onClick={() => {
+                setNewItemType("text");
+                setNewItemText("");
+              }}
+            >
+              Text
+            </button>
+            <button
+              type="button"
+              className={`btn btn-ghost ${newItemType === "image" ? "active" : ""}`}
+              onClick={() => {
+                setNewItemType("image");
+                setNewItemText("");
+              }}
+            >
+              Image URL
+            </button>
+          </div>
           <input
-            type="text"
-            placeholder="Add a new item..."
+            type={newItemType === "image" ? "url" : "text"}
+            placeholder={
+              newItemType === "image"
+                ? "https://example.com/image.jpg"
+                : "Add a new item..."
+            }
             value={newItemText}
             onChange={(e) => setNewItemText(e.target.value)}
-            maxLength={200}
+            maxLength={newItemType === "image" ? 2500 : 200}
           />
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={addingItem || !newItemText.trim()}
+            disabled={
+              addingItem ||
+              !newItemText.trim() ||
+              (poll?.items.length ?? 0) >= 25
+            }
           >
-            {addingItem ? "..." : "+ Add"}
+            {addingItem
+              ? "..."
+              : (poll?.items.length ?? 0) >= 25
+                ? "Limit reached"
+                : "+ Add"}
           </button>
         </form>
       </div>
