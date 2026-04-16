@@ -30,8 +30,9 @@ eventsRouter.get("/poll/:code/events", (req: Request, res: Response) => {
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("Connection", "keep-alive");
   res.setHeader("X-Accel-Buffering", "no");
+  // Prevent proxy/CDN compression that would buffer the stream
+  res.setHeader("Content-Encoding", "identity");
   res.flushHeaders();
 
   // Padding to push past proxy buffering thresholds (2kb)
