@@ -54,6 +54,7 @@ export function PollItem({
         method: "DELETE",
       });
       onDelete(item.id);
+      onVoteChange();
     } catch (err) {
       console.error(err);
     }

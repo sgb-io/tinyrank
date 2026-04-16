@@ -158,14 +158,9 @@ export function PollPage({
     setEditingTitle(false);
   };
 
-  const handleDeleteItem = useCallback(
-    async (itemId: string) => {
-      await apiFetch(`/api/polls/${code}/items/${itemId}`, {
-        method: "DELETE",
-      });
-    },
-    [code],
-  );
+  const handleDeleteItem = useCallback(async (_itemId: string) => {
+    // API call is made in PollItem; SSE will push the updated poll state.
+  }, []);
 
   if (error) {
     return (
