@@ -29,13 +29,13 @@ export interface Poll {
   expiresAt: number;
 }
 
-export type Tier = 'S' | 'A' | 'B' | 'C' | 'D' | 'E';
+export type Tier = "S" | "A" | "B" | "C" | "D" | "E";
 
 export function getTier(score: number): Tier {
-  if (score >= 8) return 'S';
-  if (score >= 4) return 'A';
-  if (score >= 1) return 'B';
-  if (score === 0) return 'C';
-  if (score >= -3) return 'D';
-  return 'E';
+  if (score >= 1) return "S";
+  if (score >= 0) return "A";
+  if (score >= -3) return "B";
+  if (score >= -6) return "C";
+  if (score >= -9) return "D";
+  return "E";
 }

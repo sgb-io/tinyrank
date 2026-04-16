@@ -17,42 +17,12 @@ Create a poll, share a short 6-character code, and watch participants rank items
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Server | Node.js · TypeScript · Express |
-| Client | React · TypeScript · Vite |
-| Database | In-memory (no external dependency) |
-| Real-time | Server-Sent Events (SSE) |
-
-## Project Structure
-
-```
-tinyrank/
-├── package.json          # Root scripts
-├── server/               # Express API server
-│   └── src/
-│       ├── index.ts      # Entry point, middleware, CSRF, rate limiting
-│       ├── types.ts      # Shared types (Poll, PollItem, Session, …)
-│       ├── store.ts      # In-memory data store + TTL cleanup
-│       ├── session.ts    # Cookie-based anonymous sessions
-│       └── routes/
-│           ├── polls.ts  # REST endpoints for polls, items, voting
-│           └── events.ts # SSE endpoint for real-time updates
-└── client/               # React SPA
-    └── src/
-        ├── App.tsx           # Client-side router
-        ├── types.ts          # Shared types (mirrors server)
-        ├── styles.css        # Dark theme + tier colours + animations
-        ├── components/
-        │   ├── HomePage.tsx      # Create / join poll
-        │   ├── PollPage.tsx      # Poll view, SSE consumer, owner controls
-        │   ├── TierList.tsx      # S–E tier rows with auto-grouping
-        │   ├── PollItem.tsx      # Item card with vote buttons
-        │   └── VoterAvatars.tsx  # Avatar stack + hover modal
-        └── utils/
-            ├── api.ts        # Fetch wrapper (auto CSRF header)
-            └── avatar.ts     # Deterministic SVG avatar generator
-```
+| Layer     | Technology                         |
+| --------- | ---------------------------------- |
+| Server    | Node.js · TypeScript · Express     |
+| Client    | React · TypeScript · Vite          |
+| Database  | In-memory (no external dependency) |
+| Real-time | Server-Sent Events (SSE)           |
 
 ## Development
 
@@ -102,11 +72,11 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 No variables are required for local development. The following optional variables are available:
 
-| Variable | Default | Description |
-|---|---|---|
-| `PORT` | `3001` | Port the Express server listens on |
+| Variable      | Default                    | Description                                                     |
+| ------------- | -------------------------- | --------------------------------------------------------------- |
+| `PORT`        | `3001`                     | Port the Express server listens on                              |
 | `CSRF_SECRET` | `tinyrank-dev-csrf-secret` | Secret used to sign CSRF tokens — **change this in production** |
-| `NODE_ENV` | — | Set to `production` to serve the built client from the server |
+| `NODE_ENV`    | —                          | Set to `production` to serve the built client from the server   |
 
 ## Production Build & Deployment
 
@@ -137,6 +107,7 @@ npm start          # runs: node dist/index.js
 ```
 
 The server will:
+
 - Serve the React SPA from `client/dist/` for all non-API routes
 - Handle all API and SSE requests under `/api/`
 
@@ -174,40 +145,40 @@ CMD ["node", "server/dist/index.js"]
 
 All endpoints are prefixed with `/api`. State-changing requests (`POST`, `PATCH`, `DELETE`) require an `X-CSRF-Token` header obtained from `GET /api/csrf-token`.
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/csrf-token` | Get a CSRF token |
-| `GET` | `/api/session` | Get current session |
-| `PATCH` | `/api/session` | Set display name (`{ username }`) |
-| `POST` | `/api/polls` | Create poll (`{ title, items[] }`) |
-| `GET` | `/api/polls/:code` | Get poll + `isOwner` flag |
-| `PATCH` | `/api/polls/:code` | Rename poll title (owner only) |
-| `DELETE` | `/api/polls/:code` | Delete poll (owner only) |
-| `POST` | `/api/polls/:code/items` | Add item (`{ text }`) |
-| `DELETE` | `/api/polls/:code/items/:id` | Delete item (owner only) |
-| `POST` | `/api/polls/:code/items/:id/vote` | Vote (`{ vote: "up"\|"down"\|null }`) |
-| `GET` | `/api/poll/:code/events` | SSE stream of live poll updates |
+| Method   | Path                              | Description                           |
+| -------- | --------------------------------- | ------------------------------------- |
+| `GET`    | `/api/csrf-token`                 | Get a CSRF token                      |
+| `GET`    | `/api/session`                    | Get current session                   |
+| `PATCH`  | `/api/session`                    | Set display name (`{ username }`)     |
+| `POST`   | `/api/polls`                      | Create poll (`{ title, items[] }`)    |
+| `GET`    | `/api/polls/:code`                | Get poll + `isOwner` flag             |
+| `PATCH`  | `/api/polls/:code`                | Rename poll title (owner only)        |
+| `DELETE` | `/api/polls/:code`                | Delete poll (owner only)              |
+| `POST`   | `/api/polls/:code/items`          | Add item (`{ text }`)                 |
+| `DELETE` | `/api/polls/:code/items/:id`      | Delete item (owner only)              |
+| `POST`   | `/api/polls/:code/items/:id/vote` | Vote (`{ vote: "up"\|"down"\|null }`) |
+| `GET`    | `/api/poll/:code/events`          | SSE stream of live poll updates       |
 
 ## Tiering Logic
 
 Items are assigned a tier automatically from their score (`upvotes − downvotes`):
 
-| Tier | Score |
-|---|---|
-| S | ≥ 8 |
-| A | 4 – 7 |
-| B | 1 – 3 |
-| C | 0 (default) |
-| D | −1 to −3 |
-| E | ≤ −4 |
+| Tier | Score       |
+| ---- | ----------- |
+| S    | ≥ 8         |
+| A    | 4 – 7       |
+| B    | 1 – 3       |
+| C    | 0 (default) |
+| D    | −1 to −3    |
+| E    | ≤ −4        |
 
 ## Limits
 
-| Limit | Value |
-|---|---|
-| Polls per session | 10 |
-| Global polls | 5,000 |
-| Poll lifetime | 24 hours |
-| Poll title length | 100 characters |
-| Item text length | 200 characters |
-| Display name length | 32 characters |
+| Limit               | Value          |
+| ------------------- | -------------- |
+| Polls per session   | 10             |
+| Global polls        | 5,000          |
+| Poll lifetime       | 24 hours       |
+| Poll title length   | 100 characters |
+| Item text length    | 200 characters |
+| Display name length | 32 characters  |

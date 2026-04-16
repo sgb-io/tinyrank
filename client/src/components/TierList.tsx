@@ -1,16 +1,16 @@
-import { useMemo } from 'react';
-import { PollItem as PollItemType, SessionInfo, Tier, getTier } from '../types';
-import { PollItem } from './PollItem';
+import { useMemo } from "react";
+import { PollItem as PollItemType, SessionInfo, Tier, getTier } from "../types";
+import { PollItem } from "./PollItem";
 
-const TIERS: Tier[] = ['S', 'A', 'B', 'C', 'D', 'E'];
+const TIERS: Tier[] = ["S", "A", "B", "C", "D", "E"];
 
 const TIER_COLORS: Record<Tier, string> = {
-  S: '#FFD700',
-  A: '#FF8C00',
-  B: '#32CD32',
-  C: '#4169E1',
-  D: '#9370DB',
-  E: '#808080',
+  S: "#ff7f7f",
+  A: "#ffbf7f",
+  B: "#ffdf7f",
+  C: "#ffff7f",
+  D: "#bfff7f",
+  E: "#7fff7f",
 };
 
 interface TierListProps {
@@ -22,9 +22,23 @@ interface TierListProps {
   onDeleteItem: (itemId: string) => void;
 }
 
-export function TierList({ items, pollCode, session, isOwner, onVoteChange, onDeleteItem }: TierListProps) {
+export function TierList({
+  items,
+  pollCode,
+  session,
+  isOwner,
+  onVoteChange,
+  onDeleteItem,
+}: TierListProps) {
   const grouped = useMemo(() => {
-    const map: Record<Tier, PollItemType[]> = { S: [], A: [], B: [], C: [], D: [], E: [] };
+    const map: Record<Tier, PollItemType[]> = {
+      S: [],
+      A: [],
+      B: [],
+      C: [],
+      D: [],
+      E: [],
+    };
     for (const item of items) {
       const score = item.upvotes.length - item.downvotes.length;
       const tier = getTier(score);
@@ -43,7 +57,7 @@ export function TierList({ items, pollCode, session, isOwner, onVoteChange, onDe
 
   return (
     <div className="tier-list">
-      {TIERS.map(tier => (
+      {TIERS.map((tier) => (
         <div key={tier} className="tier-row">
           <div
             className="tier-label"
@@ -55,7 +69,7 @@ export function TierList({ items, pollCode, session, isOwner, onVoteChange, onDe
             {grouped[tier].length === 0 ? (
               <div className="tier-empty">—</div>
             ) : (
-              grouped[tier].map(item => (
+              grouped[tier].map((item) => (
                 <PollItem
                   key={item.id}
                   item={item}
