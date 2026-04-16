@@ -4,7 +4,7 @@ A minimal, lightweight web application for live tier ranking polls.
 
 Create a poll, share a short 6-character code, and watch participants rank items into tiers (S/A/B/C/D/E) in real time — no accounts required.
 
-![TinyRank home page](https://github.com/user-attachments/assets/b9ec0dd9-b33e-4c37-bd87-3b4828446ea3)
+![TinyRank Preview](preview.jpg)
 
 ## Features
 
@@ -165,12 +165,12 @@ Items are assigned a tier automatically from their score (`upvotes − downvotes
 
 | Tier | Score       |
 | ---- | ----------- |
-| S    | ≥ 8         |
-| A    | 4 – 7       |
-| B    | 1 – 3       |
-| C    | 0 (default) |
-| D    | −1 to −3    |
-| E    | ≤ −4        |
+| S    | ≥ 1         |
+| A    | 0 (default) |
+| B    | −1 to −3    |
+| C    | −4 to −6    |
+| D    | −7 to −9    |
+| E    | ≤ −10       |
 
 ## Limits
 
