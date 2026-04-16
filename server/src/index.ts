@@ -9,6 +9,11 @@ import { eventsRouter } from "./routes/events";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const isProd = process.env.NODE_ENV === "production";
+
+if (isProd) {
+  app.set("trust proxy", 1);
+}
 
 app.use(cookieParser());
 app.use(express.json());
@@ -21,7 +26,7 @@ const { doubleCsrfProtection, generateCsrfToken } = doubleCsrf({
   getSecret: () => process.env.CSRF_SECRET ?? "tinyrank-dev-csrf-secret",
   getSessionIdentifier: (req) => (req as express.Request).session?.id ?? "",
   cookieName: "tinyrank_csrf",
-  cookieOptions: { sameSite: "lax", httpOnly: true },
+  cookieOptions: { sameSite: "lax", httpOnly: true, secure: isProd },
   getCsrfTokenFromRequest: (req) =>
     (req as express.Request).headers["x-csrf-token"] as string,
 });
