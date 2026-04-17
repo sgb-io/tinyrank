@@ -21,7 +21,7 @@ Create a poll, share a short 6-character code, and watch participants rank items
 | --------- | ---------------------------------- |
 | Server    | Node.js · TypeScript · Express     |
 | Client    | React · TypeScript · Vite          |
-| Database  | In-memory (no external dependency) |
+| Database  | In-memory · optional file persistence |
 | Real-time | Server-Sent Events (SSE)           |
 
 ## Development
@@ -72,11 +72,12 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 No variables are required for local development. The following optional variables are available:
 
-| Variable      | Default                    | Description                                                     |
-| ------------- | -------------------------- | --------------------------------------------------------------- |
-| `PORT`        | `3001`                     | Port the Express server listens on                              |
-| `CSRF_SECRET` | `tinyrank-dev-csrf-secret` | Secret used to sign CSRF tokens — **change this in production** |
-| `NODE_ENV`    | —                          | Set to `production` to serve the built client from the server   |
+| Variable      | Default                    | Description                                                                                                      |
+| ------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `PORT`        | `3001`                     | Port the Express server listens on                                                                               |
+| `CSRF_SECRET` | `tinyrank-dev-csrf-secret` | Secret used to sign CSRF tokens — **change this in production**                                                  |
+| `NODE_ENV`    | —                          | Set to `production` to serve the built client from the server                                                    |
+| `STATE_FILE`  | —                          | Path to a JSON file for opt-in state persistence (e.g. `./data/state.json`). See [State Persistence](#state-persistence). |
 
 ## Production Build & Deployment
 
@@ -137,10 +138,28 @@ CMD ["node", "server/dist/index.js"]
 
 ### Important production notes
 
-- **Data is in-memory.** All polls are lost on process restart. This is by design — polls only live for 24 hours.
+- **Data is in-memory by default.** All polls are lost on process restart. Enable file-based persistence with the `STATE_FILE` variable (see [State Persistence](#state-persistence)) if you need state to survive restarts.
 - **Single instance only.** Because the store is in-memory, running multiple server instances will result in inconsistent state. Use a single-instance deployment.
 - **Not compatible with serverless platforms.** TinyRank requires a long-running server process. Serverless environments (Vercel, AWS Lambda, Netlify Functions, Cloudflare Workers) are not suitable because SSE connections rely on cross-request broadcast — when one client votes, all other clients' open SSE connections receive the update. Serverless functions are stateless and isolated, so the in-memory client registry and poll store cannot be shared across invocations.
 - **Set `CSRF_SECRET`** to a long random string in production; the default is insecure.
+
+## State Persistence
+
+By default, TinyRank keeps all data in memory and nothing survives a restart. To opt in to file-based persistence, set the `STATE_FILE` environment variable to a writable path:
+
+```bash
+export STATE_FILE=./data/state.json
+```
+
+When `STATE_FILE` is set:
+
+- **On startup**, TinyRank reads the file and restores all non-expired polls and sessions into memory.
+- **Every 60 seconds**, TinyRank writes the current state to the file automatically.
+- **On shutdown** (`SIGTERM` or `SIGINT`), TinyRank performs a final write before exiting, so a graceful restart loses no data.
+
+The file is written atomically (written to a `.tmp` sibling file then renamed) to prevent corruption if the process is killed mid-write.
+
+> **Note:** This is a simple single-file solution intended for small deployments. It is not a replacement for a real database and is not suitable for multi-instance deployments.
 
 ## API Reference
 
