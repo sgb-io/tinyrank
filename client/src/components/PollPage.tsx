@@ -38,6 +38,7 @@ export function PollPage({
   const [newItemText, setNewItemText] = useState("");
   const [newItemType, setNewItemType] = useState<"text" | "image">("text");
   const [addingItem, setAddingItem] = useState(false);
+  const [imageUrlError, setImageUrlError] = useState("");
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleInput, setTitleInput] = useState("");
   const sseRef = useRef<EventSource | null>(null);
@@ -122,12 +123,57 @@ export function PollPage({
     }
   };
 
+  const ALLOWED_IMAGE_EXTENSIONS = [
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".svg",
+    ".avif",
+  ];
+
+  const validateImageUrl = (url: string): string => {
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== "https:") return "Image URL must use HTTPS";
+      const path = parsed.pathname.toLowerCase();
+      if (!ALLOWED_IMAGE_EXTENSIONS.some((ext) => path.endsWith(ext))) {
+        return (
+          "URL must end in a supported image extension (" +
+          ALLOWED_IMAGE_EXTENSIONS.join(", ") +
+          ")"
+        );
+      }
+    } catch {
+      return "Invalid URL";
+    }
+    return "";
+  };
+
+  const handleImageUrlChange = (value: string) => {
+    setNewItemText(value);
+    if (newItemType === "image" && value.trim()) {
+      setImageUrlError(validateImageUrl(value.trim()));
+    } else {
+      setImageUrlError("");
+    }
+  };
+
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = newItemText.trim();
     if (!text || addingItem) return;
+    if (newItemType === "image") {
+      const err = validateImageUrl(text);
+      if (err) {
+        setImageUrlError(err);
+        return;
+      }
+    }
     setAddingItem(true);
     setNewItemText("");
+    setImageUrlError("");
     try {
       await apiFetch(`/api/polls/${code}/items`, {
         method: "POST",
@@ -144,6 +190,10 @@ export function PollPage({
   const handleDeletePoll = async () => {
     if (!confirm("Delete this poll? This cannot be undone.")) return;
     await apiFetch(`/api/polls/${code}`, { method: "DELETE" });
+    setSession({
+      ...session,
+      polls: (session.polls ?? []).filter((p) => p.code !== code),
+    });
     navigate("/");
   };
 
@@ -329,6 +379,7 @@ export function PollPage({
               onClick={() => {
                 setNewItemType("text");
                 setNewItemText("");
+                setImageUrlError("");
               }}
             >
               Text
@@ -339,6 +390,7 @@ export function PollPage({
               onClick={() => {
                 setNewItemType("image");
                 setNewItemText("");
+                setImageUrlError("");
               }}
             >
               Image URL
@@ -352,9 +404,18 @@ export function PollPage({
                 : "Add a new item..."
             }
             value={newItemText}
-            onChange={(e) => setNewItemText(e.target.value)}
+            onChange={(e) => handleImageUrlChange(e.target.value)}
             maxLength={newItemType === "image" ? 2500 : 200}
           />
+          {newItemType === "image" && imageUrlError && newItemText.trim() && (
+            <span className="image-url-error">{imageUrlError}</span>
+          )}
+          {newItemType === "image" && !imageUrlError && !newItemText.trim() && (
+            <span className="image-url-hint">
+              URL must end in a file extension (.jpg, .png, .gif, .webp, .svg,
+              .avif)
+            </span>
+          )}
           <button
             type="submit"
             className="btn btn-primary"

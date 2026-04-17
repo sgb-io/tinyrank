@@ -766,6 +766,18 @@ body {
   color: var(--text-muted);
 }
 
+.image-url-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: -0.25rem;
+}
+
+.image-url-error {
+  font-size: 0.78rem;
+  color: var(--danger);
+  margin-top: -0.25rem;
+}
+
 /* USERNAME MODAL */
 .modal-overlay {
   position: fixed;
