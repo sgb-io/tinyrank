@@ -139,6 +139,7 @@ CMD ["node", "server/dist/index.js"]
 
 - **Data is in-memory.** All polls are lost on process restart. This is by design — polls only live for 24 hours.
 - **Single instance only.** Because the store is in-memory, running multiple server instances will result in inconsistent state. Use a single-instance deployment.
+- **Not compatible with serverless platforms.** TinyRank requires a long-running server process. Serverless environments (Vercel, AWS Lambda, Netlify Functions, Cloudflare Workers) are not suitable because SSE connections rely on cross-request broadcast — when one client votes, all other clients' open SSE connections receive the update. Serverless functions are stateless and isolated, so the in-memory client registry and poll store cannot be shared across invocations.
 - **Set `CSRF_SECRET`** to a long random string in production; the default is insecure.
 
 ## API Reference
