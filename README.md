@@ -21,7 +21,7 @@ Create a poll, share a short 6-character code, and watch participants rank items
 | --------- | ---------------------------------- |
 | Server    | Node.js · TypeScript · Express     |
 | Client    | React · TypeScript · Vite          |
-| Database  | In-memory (no external dependency) |
+| Database  | In-memory · optional file persistence |
 | Real-time | Server-Sent Events (SSE)           |
 
 ## Development
@@ -72,11 +72,17 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 No variables are required for local development. The following optional variables are available:
 
-| Variable      | Default                    | Description                                                     |
-| ------------- | -------------------------- | --------------------------------------------------------------- |
-| `PORT`        | `3001`                     | Port the Express server listens on                              |
-| `CSRF_SECRET` | `tinyrank-dev-csrf-secret` | Secret used to sign CSRF tokens — **change this in production** |
-| `NODE_ENV`    | —                          | Set to `production` to serve the built client from the server   |
+| Variable               | Default                    | Description                                                                                                          |
+| ---------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                 | `3001`                     | Port the Express server listens on                                                                                   |
+| `CSRF_SECRET`          | `tinyrank-dev-csrf-secret` | Secret used to sign CSRF tokens — **change this in production**                                                      |
+| `NODE_ENV`             | —                          | Set to `production` to serve the built client from the server                                                        |
+| `STATE_FILE`           | —                          | Path to a JSON file for opt-in state persistence (e.g. `./data/state.json`). See [State Persistence](#state-persistence). |
+| `S3_BUCKET`            | —                          | S3 bucket name for opt-in S3 persistence. Takes precedence over `STATE_FILE`. See [State Persistence](#state-persistence). |
+| `S3_KEY`               | `tinyrank-state.json`      | Object key used within the S3 bucket.                                                                                |
+| `S3_REGION`            | `us-east-1`                | AWS region of the bucket.                                                                                            |
+| `S3_ENDPOINT`          | —                          | Custom endpoint URL for S3-compatible services (MinIO, Cloudflare R2, etc.).                                         |
+| `S3_FORCE_PATH_STYLE`  | —                          | Set to `true` to use path-style access (required by some S3-compatible services).                                    |
 
 ## Production Build & Deployment
 
@@ -137,10 +143,58 @@ CMD ["node", "server/dist/index.js"]
 
 ### Important production notes
 
-- **Data is in-memory.** All polls are lost on process restart. This is by design — polls only live for 24 hours.
+- **Data is in-memory by default.** All polls are lost on process restart. Enable file-based or S3 persistence (see [State Persistence](#state-persistence)) if you need state to survive restarts.
 - **Single instance only.** Because the store is in-memory, running multiple server instances will result in inconsistent state. Use a single-instance deployment.
 - **Not compatible with serverless platforms.** TinyRank requires a long-running server process. Serverless environments (Vercel, AWS Lambda, Netlify Functions, Cloudflare Workers) are not suitable because SSE connections rely on cross-request broadcast — when one client votes, all other clients' open SSE connections receive the update. Serverless functions are stateless and isolated, so the in-memory client registry and poll store cannot be shared across invocations.
 - **Set `CSRF_SECRET`** to a long random string in production; the default is insecure.
+
+## State Persistence
+
+By default, TinyRank keeps all data in memory and nothing survives a restart. Two opt-in persistence backends are available.
+
+### File-based persistence
+
+Set `STATE_FILE` to a writable path on the local filesystem:
+
+```bash
+export STATE_FILE=./data/state.json
+```
+
+### S3 / S3-compatible bucket
+
+Set `S3_BUCKET` to persist state to an S3 bucket. S3 mode takes precedence over `STATE_FILE` if both are set.
+
+**AWS S3:**
+
+```bash
+export S3_BUCKET=my-tinyrank-bucket
+export S3_REGION=us-east-1          # optional, defaults to us-east-1
+export S3_KEY=tinyrank-state.json   # optional object key
+
+# Standard AWS credentials — use env vars, an IAM role, or any credential provider
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+```
+
+**S3-compatible services (MinIO, Cloudflare R2, etc.):**
+
+```bash
+export S3_BUCKET=my-tinyrank-bucket
+export S3_ENDPOINT=https://my-minio.example.com   # custom endpoint
+export S3_FORCE_PATH_STYLE=true                   # required for MinIO
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+```
+
+### Behavior (both backends)
+
+- **On startup**, TinyRank loads the stored state and restores all non-expired polls and sessions.
+- **Every 60 seconds**, TinyRank writes the current state automatically (limits data loss on crash to ≤ 60 s).
+- **On shutdown** (`SIGTERM` or `SIGINT`), TinyRank performs a final write before exiting, so a graceful restart loses no data.
+
+For the file backend, writes are atomic (written to a `.tmp` sibling file then renamed) to prevent corruption if the process is killed mid-write.
+
+> **Note:** Both backends are intended for single-instance deployments. They are not suitable for running multiple server processes against the same storage simultaneously.
 
 ## API Reference
 

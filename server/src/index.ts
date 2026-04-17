@@ -6,6 +6,7 @@ import { doubleCsrf } from "csrf-csrf";
 import { sessionMiddleware } from "./session";
 import { pollsRouter } from "./routes/polls";
 import { eventsRouter } from "./routes/events";
+import { loadState, persistState } from "./persist";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -73,6 +74,25 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`TinyRank server running on port ${PORT}`);
+// Load persisted state then start listening.
+// loadState is async to support both file and S3 backends.
+async function start(): Promise<void> {
+  await loadState();
+
+  // Persist state on graceful shutdown so in-flight data is not lost.
+  async function shutdown(): Promise<void> {
+    await persistState();
+    process.exit(0);
+  }
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
+
+  app.listen(PORT, () => {
+    console.log(`TinyRank server running on port ${PORT}`);
+  });
+}
+
+start().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
