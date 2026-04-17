@@ -6,7 +6,7 @@ export const sessions = new Map<string, Session>();
 export const MAX_POLLS_PER_USER = 10;
 export const MAX_GLOBAL_POLLS = 5000;
 export const MAX_ITEMS_PER_POLL = 25;
-export const POLL_TTL = 24 * 60 * 60 * 1000; // 24 hours
+export const POLL_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export function cleanupExpiredPolls(): void {
   const now = Date.now();

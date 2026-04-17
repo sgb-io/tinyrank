@@ -8,7 +8,7 @@ Create a poll, share a short 6-character code, and watch participants rank items
 
 ## Features
 
-- **Anonymous & ephemeral** — cookie-based sessions, no sign-up, polls auto-delete after 24 hours
+- **Anonymous & ephemeral** — cookie-based sessions, no sign-up, polls auto-delete after 7 days
 - **Instant sharing** — 6-character codes (`/poll/giwkch`), case-insensitive
 - **Live updates** — Server-Sent Events push every vote/item change to all viewers in real time
 - **Auto-tiering** — items move between S/A/B/C/D/E tiers automatically based on vote score
@@ -17,12 +17,12 @@ Create a poll, share a short 6-character code, and watch participants rank items
 
 ## Tech Stack
 
-| Layer     | Technology                         |
-| --------- | ---------------------------------- |
-| Server    | Node.js · TypeScript · Express     |
-| Client    | React · TypeScript · Vite          |
+| Layer     | Technology                            |
+| --------- | ------------------------------------- |
+| Server    | Node.js · TypeScript · Express        |
+| Client    | React · TypeScript · Vite             |
 | Database  | In-memory · optional file persistence |
-| Real-time | Server-Sent Events (SSE)           |
+| Real-time | Server-Sent Events (SSE)              |
 
 ## Development
 
@@ -72,17 +72,17 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 No variables are required for local development. The following optional variables are available:
 
-| Variable               | Default                    | Description                                                                                                          |
-| ---------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `PORT`                 | `3001`                     | Port the Express server listens on                                                                                   |
-| `CSRF_SECRET`          | `tinyrank-dev-csrf-secret` | Secret used to sign CSRF tokens — **change this in production**                                                      |
-| `NODE_ENV`             | —                          | Set to `production` to serve the built client from the server                                                        |
-| `STATE_FILE`           | —                          | Path to a JSON file for opt-in state persistence (e.g. `./data/state.json`). See [State Persistence](#state-persistence). |
-| `S3_BUCKET`            | —                          | S3 bucket name for opt-in S3 persistence. Takes precedence over `STATE_FILE`. See [State Persistence](#state-persistence). |
-| `S3_KEY`               | `tinyrank-state.json`      | Object key used within the S3 bucket.                                                                                |
-| `S3_REGION`            | `us-east-1`                | AWS region of the bucket.                                                                                            |
-| `S3_ENDPOINT`          | —                          | Custom endpoint URL for S3-compatible services (MinIO, Cloudflare R2, etc.).                                         |
-| `S3_FORCE_PATH_STYLE`  | —                          | Set to `true` to use path-style access (required by some S3-compatible services).                                    |
+| Variable              | Default                    | Description                                                                                                                |
+| --------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                | `3001`                     | Port the Express server listens on                                                                                         |
+| `CSRF_SECRET`         | `tinyrank-dev-csrf-secret` | Secret used to sign CSRF tokens — **change this in production**                                                            |
+| `NODE_ENV`            | —                          | Set to `production` to serve the built client from the server                                                              |
+| `STATE_FILE`          | —                          | Path to a JSON file for opt-in state persistence (e.g. `./data/state.json`). See [State Persistence](#state-persistence).  |
+| `S3_BUCKET`           | —                          | S3 bucket name for opt-in S3 persistence. Takes precedence over `STATE_FILE`. See [State Persistence](#state-persistence). |
+| `S3_KEY`              | `tinyrank-state.json`      | Object key used within the S3 bucket.                                                                                      |
+| `S3_REGION`           | `us-east-1`                | AWS region of the bucket.                                                                                                  |
+| `S3_ENDPOINT`         | —                          | Custom endpoint URL for S3-compatible services (MinIO, Cloudflare R2, etc.).                                               |
+| `S3_FORCE_PATH_STYLE` | —                          | Set to `true` to use path-style access (required by some S3-compatible services).                                          |
 
 ## Production Build & Deployment
 
@@ -234,7 +234,7 @@ Items are assigned a tier automatically from their score (`upvotes − downvotes
 | Polls per session   | 10             |
 | Global polls        | 5,000          |
 | Items per poll      | 25             |
-| Poll lifetime       | 24 hours       |
+| Poll lifetime       | 7 days         |
 | Poll title length   | 100 characters |
 | Item text length    | 200 characters |
 | Display name length | 32 characters  |
