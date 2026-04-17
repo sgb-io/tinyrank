@@ -74,16 +74,25 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-loadState();
+// Load persisted state then start listening.
+// loadState is async to support both file and S3 backends.
+async function start(): Promise<void> {
+  await loadState();
 
-// Persist state on graceful shutdown so in-flight data is not lost.
-function shutdown() {
-  persistState();
-  process.exit(0);
+  // Persist state on graceful shutdown so in-flight data is not lost.
+  async function shutdown(): Promise<void> {
+    await persistState();
+    process.exit(0);
+  }
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
+
+  app.listen(PORT, () => {
+    console.log(`TinyRank server running on port ${PORT}`);
+  });
 }
-process.on("SIGTERM", shutdown);
-process.on("SIGINT", shutdown);
 
-app.listen(PORT, () => {
-  console.log(`TinyRank server running on port ${PORT}`);
+start().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
